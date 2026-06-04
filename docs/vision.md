@@ -73,6 +73,8 @@ Status: initial version complete.
 
 ### Phase 1: Realistic Benchmark
 
+Status: initial version complete.
+
 Add a reproducible benchmark fixture that looks like a real RAG workflow:
 
 - `benchmarks/company_handbook/docs/`

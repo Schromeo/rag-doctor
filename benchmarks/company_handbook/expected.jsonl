@@ -1,0 +1,4 @@
+{"id":"q1","expected_answer":"Employees must submit expense reports within 30 days after the trip ends.","required_sources":["reimbursement.md"]}
+{"id":"q2","expected_answer":"Employees must attach receipts for lodging, meals, and transportation.","required_sources":["reimbursement.md"]}
+{"id":"q3","expected_answer":"New employees must complete security training within 7 days of their start date.","required_sources":["security.md"]}
+{"id":"q4","expected_answer":"Employees must report suspected security incidents to the Security team immediately.","required_sources":["security.md"]}

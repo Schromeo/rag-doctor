@@ -46,6 +46,30 @@ You can also run without installing the package by setting `PYTHONPATH`:
 PYTHONPATH=src python -m rag_doctor.cli diagnose examples/handbook.jsonl
 ```
 
+## Realistic Benchmark
+
+The repository includes a small company handbook benchmark with Markdown docs, questions, and expected answers.
+
+Generate a baseline run using the built-in keyword retriever:
+
+```bash
+PYTHONPATH=src python -m rag_doctor.cli retrieve \
+  benchmarks/company_handbook/docs \
+  benchmarks/company_handbook/questions.jsonl \
+  benchmarks/company_handbook/expected.jsonl \
+  --output outputs/company_handbook_baseline.jsonl
+```
+
+Diagnose that generated run:
+
+```bash
+PYTHONPATH=src python -m rag_doctor.cli diagnose \
+  outputs/company_handbook_baseline.jsonl \
+  --output outputs/company_handbook_report.md
+```
+
+The keyword retriever is intentionally simple and transparent. It is a baseline for learning and regression testing, not a production semantic search engine.
+
 ## Input Format
 
 Each JSONL line is one evaluation case:
@@ -72,6 +96,7 @@ Each JSONL line is one evaluation case:
 See [docs/vision.md](docs/vision.md) for the project scope, non-goals, core concepts, and phased roadmap.
 
 - Compare two experiment runs and highlight regressions.
+- Expand the realistic benchmark and keyword retriever.
 - Add adapters for Langfuse, Phoenix, DeepEval, and Ragas exports.
 - Add optional LLM-as-judge scoring for semantic grounding.
 - Add GitHub PR comment output for CI workflows.
