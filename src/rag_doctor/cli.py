@@ -9,6 +9,16 @@ from rag_doctor.report import render_markdown_report
 
 
 def main() -> int:
+    """CLI entry point.
+
+    Current command surface:
+    - `diagnose`: read JSONL cases and render a Markdown report.
+
+    Future commands should stay diagnosis-oriented: `retrieve`, `compare`,
+    `import`, and `report` are good candidates; general chatbot commands are
+    outside the project scope.
+    """
+
     parser = argparse.ArgumentParser(prog="rag-doctor")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -24,6 +34,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "diagnose":
+        # Pipeline: JSONL -> EvaluationCase objects -> Diagnosis objects -> report.
         cases = load_jsonl(args.input)
         diagnoses = [diagnose_case(case) for case in cases]
         report = render_markdown_report(diagnoses)

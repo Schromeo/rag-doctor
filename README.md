@@ -69,6 +69,8 @@ Each JSONL line is one evaluation case:
 
 ## Roadmap
 
+See [docs/vision.md](docs/vision.md) for the project scope, non-goals, core concepts, and phased roadmap.
+
 - Compare two experiment runs and highlight regressions.
 - Add adapters for Langfuse, Phoenix, DeepEval, and Ragas exports.
 - Add optional LLM-as-judge scoring for semantic grounding.

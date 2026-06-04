@@ -7,6 +7,8 @@ from rag_doctor.diagnosis import Diagnosis
 
 
 def render_markdown_report(diagnoses: list[Diagnosis]) -> str:
+    """Render a report optimized for humans and GitHub comments."""
+
     counts = Counter(diagnosis.failure_type for diagnosis in diagnoses)
     failed = sum(1 for diagnosis in diagnoses if diagnosis.status == "failed")
     total = len(diagnoses)
@@ -50,6 +52,8 @@ def render_markdown_report(diagnoses: list[Diagnosis]) -> str:
 
 
 def recommendation(counts: Counter[str]) -> str:
+    """Choose a top-level next action from the most common failure type."""
+
     if not counts:
         return "No cases were evaluated."
     most_common, _ = counts.most_common(1)[0]

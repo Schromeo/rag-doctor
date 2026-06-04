@@ -16,6 +16,8 @@ FAILURE_DOCUMENT_CONFLICT = "document_conflict"
 
 @dataclass(frozen=True)
 class Diagnosis:
+    """Human-readable diagnosis for a single RAG evaluation case."""
+
     case_id: str
     status: str
     failure_type: str
@@ -26,7 +28,18 @@ class Diagnosis:
 
 
 def diagnose_case(case: EvaluationCase) -> Diagnosis:
+    """Classify the most likely failure mode for one RAG case.
+
+    The current MVP uses deterministic heuristics instead of an LLM judge. This
+    keeps local tests cheap and repeatable. The order of checks is intentional:
+    conflict and retrieval failures are upstream problems, so they are reported
+    before generation or citation issues.
+    """
+
     expected_terms = extract_signal_terms(case.expected_answer)
+    # Critical terms are facts we care about most. Today this means numbers and
+    # percentages; later this can become configurable for dates, money, IDs, or
+    # domain-specific entities.
     critical_terms = extract_critical_terms(case.expected_answer) or expected_terms
     retrieved_text = "\n".join(chunk.text for chunk in case.retrieved_chunks)
     retrieved_terms = terms_found(critical_terms, retrieved_text)
@@ -100,6 +113,13 @@ def diagnose_case(case: EvaluationCase) -> Diagnosis:
 
 
 def extract_signal_terms(text: str) -> set[str]:
+    """Extract rough evidence terms from answer text.
+
+    Tunable area: token patterns and STOP_TERMS decide what counts as evidence.
+    This is deliberately simple now; later we can replace or supplement it with
+    a tokenizer, entity extractor, or LLM-as-judge.
+    """
+
     normalized = normalize(text)
     terms = set(re.findall(r"\d+(?:\.\d+)?%?", normalized))
     terms.update(token for token in re.findall(r"[a-zA-Z][a-zA-Z0-9_-]{2,}", normalized))
@@ -108,6 +128,8 @@ def extract_signal_terms(text: str) -> set[str]:
 
 
 def extract_critical_terms(text: str) -> set[str]:
+    """Extract high-precision terms that must usually be preserved."""
+
     return set(re.findall(r"\d+(?:\.\d+)?%?", normalize(text)))
 
 
@@ -121,6 +143,8 @@ def terms_found(terms: set[str], text: str) -> set[str]:
 
 
 def chunks_containing_terms(chunks: tuple[Chunk, ...], terms: set[str]) -> tuple[str, ...]:
+    """Return chunk IDs that contain at least one expected evidence term."""
+
     supporting = []
     for chunk in chunks:
         if terms_found(terms, chunk.text):
@@ -129,6 +153,8 @@ def chunks_containing_terms(chunks: tuple[Chunk, ...], terms: set[str]) -> tuple
 
 
 def citations_support_answer(case: EvaluationCase) -> bool:
+    """Check whether cited chunks contain the expected critical evidence."""
+
     expected_terms = extract_critical_terms(case.expected_answer) or extract_signal_terms(case.expected_answer)
     cited_text = "\n".join(
         chunk.text for chunk in case.retrieved_chunks if chunk.id in case.citations or chunk.source in case.citations
@@ -139,6 +165,13 @@ def citations_support_answer(case: EvaluationCase) -> bool:
 
 
 def has_document_conflict(case: EvaluationCase) -> bool:
+    """Detect obvious conflicts such as 30 days vs 14 days on the same topic.
+
+    Tunable area: the shared-anchor threshold below controls how strict the
+    conflict detector is. A lower threshold catches more conflicts but risks
+    false positives across unrelated policies.
+    """
+
     expected_numbers = extract_critical_terms(case.expected_answer)
     if not expected_numbers:
         return False
@@ -157,6 +190,8 @@ def has_document_conflict(case: EvaluationCase) -> bool:
 
 
 def extract_anchor_terms(text: str) -> set[str]:
+    """Extract topic anchors used to decide whether two numeric facts conflict."""
+
     terms = extract_signal_terms(text) - extract_critical_terms(text) - STOP_TERMS
     normalized = normalize(text)
     for sequence in re.findall(r"[\u4e00-\u9fff]{4,}", normalized):
@@ -165,6 +200,8 @@ def extract_anchor_terms(text: str) -> set[str]:
     return {term for term in terms if len(term) >= 3}
 
 
+# Tunable area: these words are ignored when extracting evidence/topic terms.
+# The list is intentionally small and transparent while the project is young.
 STOP_TERMS = {
     "the",
     "and",
