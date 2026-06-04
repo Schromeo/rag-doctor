@@ -28,10 +28,22 @@ pip install -e ".[dev]"
 rag-doctor diagnose examples/handbook.jsonl --output outputs/report.md
 ```
 
-Run tests:
+Open the generated report:
+
+```bash
+sed -n '1,220p' outputs/report.md
+```
+
+Run the test suite:
 
 ```bash
 pytest
+```
+
+You can also run without installing the package by setting `PYTHONPATH`:
+
+```bash
+PYTHONPATH=src python -m rag_doctor.cli diagnose examples/handbook.jsonl
 ```
 
 ## Input Format
@@ -41,16 +53,16 @@ Each JSONL line is one evaluation case:
 ```json
 {
   "id": "case-001",
-  "question": "员工报销需要在多少天内提交？",
-  "expected_answer": "出差结束后 30 天内提交。",
+  "question": "How many days after a trip can an employee submit an expense report?",
+  "expected_answer": "Employees must submit expense reports within 30 days after the trip ends.",
   "retrieved_chunks": [
     {
       "id": "reimbursement.md#chunk-2",
       "source": "reimbursement.md",
-      "text": "员工应在出差结束后 30 天内提交报销申请。"
+      "text": "Employees must submit expense reports within 30 days after the trip ends."
     }
   ],
-  "actual_answer": "员工需要在出差结束后 30 天内提交报销申请。",
+  "actual_answer": "Employees must submit expense reports within 30 days after the trip ends.",
   "citations": ["reimbursement.md#chunk-2"]
 }
 ```

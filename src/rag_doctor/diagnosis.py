@@ -151,7 +151,7 @@ def has_document_conflict(case: EvaluationCase) -> bool:
         chunk_numbers = extract_critical_terms(chunk.text)
         if not chunk_numbers or chunk_numbers <= expected_numbers:
             continue
-        if terms_found(anchors, chunk.text):
+        if len(terms_found(anchors, chunk.text)) >= min(2, len(anchors)):
             return True
     return False
 
@@ -173,6 +173,15 @@ STOP_TERMS = {
     "within",
     "after",
     "before",
+    "must",
+    "should",
+    "can",
+    "employee",
+    "employees",
+    "submit",
+    "submitted",
+    "days",
+    "day",
     "需要",
     "员工",
     "提交",
